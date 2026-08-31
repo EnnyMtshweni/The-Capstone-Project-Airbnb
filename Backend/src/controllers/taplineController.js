@@ -8,13 +8,25 @@ const searchTapline = asyncHandler(async (req, res) => {
     throw new Error('Tapline integration is not configured');
   }
 
+  const { query, check_in, check_out, adults, children, infants, cursor } = req.body;
+  const southAfricanQuery = [query, 'South Africa'].filter(Boolean).join(', ');
+
   const response = await fetch(TAPLINE_SEARCH_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': process.env.TAPLINE_API_KEY,
     },
-    body: JSON.stringify(req.body),
+    body: JSON.stringify({
+      query: southAfricanQuery,
+      check_in,
+      check_out,
+      adults,
+      children,
+      infants,
+      cursor,
+      currency: 'ZAR',
+    }),
   });
   const payload = await response.json().catch(() => ({}));
 

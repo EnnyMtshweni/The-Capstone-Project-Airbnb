@@ -8,7 +8,7 @@ Set the replacement key in `Backend/.env`:
 TAPLINE_API_KEY=replace-with-your-tapline-key
 ```
 
-Never expose this key in `Frontend` or commit the `.env` file. The backend proxies authenticated Airbnb searches through `POST /api/tapline/search`, which requires the app's JWT bearer token and forwards Tapline's search body to `https://api.tapline.sh/api/v1/airbnb/search`.
+Never expose this key in `Frontend` or commit the `.env` file. The backend proxies South African Airbnb searches through `POST /api/tapline/search` and always sends `currency: ZAR` to `https://api.tapline.sh/api/v1/airbnb/search`.
 # Airbnb Clone — Backend API
 
 Node.js / Express / MongoDB (Mongoose) backend for the Zaio iHub Capstone Project.
