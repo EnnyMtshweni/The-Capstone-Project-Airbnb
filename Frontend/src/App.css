@@ -26,8 +26,10 @@ h1 { color: white; font-family: var(--display); font-size: clamp(48px, 6vw, 82px
 .hero-credit span { margin-left: 35px; opacity: .7; }
 .search-panel { display: flex; align-items: center; gap: 0; margin-top: -33px; padding: 10px 10px 10px 25px; position: relative; z-index: 2; background: white; box-shadow: 0 12px 30px rgba(36, 34, 27, .12); }
 .search-field { display: flex; flex: 1; flex-direction: column; gap: 4px; padding: 8px 22px; border-right: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.search-field input { width: 100%; border: 0; outline: 0; color: var(--muted); background: transparent; font: inherit; }.search-field input::placeholder { color: var(--muted); }
 .field-label { color: var(--ink); font-size: 11px; font-weight: 700; }
 .search-button { width: 48px; height: 48px; border: 0; border-radius: 50%; color: white; background: var(--coral); font-size: 27px; }
+.search-button:disabled { opacity: .65; cursor: wait; }.search-message { position: absolute; right: 0; bottom: -28px; margin: 0; color: var(--muted); font-size: 11px; }.search-message.error { color: var(--coral); }.search-message.success { color: #477b59; }
 .section { padding: 105px 0 0; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; }
 h2 { color: var(--ink); font-family: var(--display); font-size: clamp(37px, 4vw, 55px); line-height: .98; letter-spacing: -2.5px; margin-bottom: 0; }
@@ -38,6 +40,7 @@ h2 { color: var(--ink); font-family: var(--display); font-size: clamp(37px, 4vw,
 .category.active { color: var(--ink); border-bottom: 2px solid var(--coral); }
 .listing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .listing-image { aspect-ratio: 1.13; position: relative; background-size: cover; background-position: center; }
+.api-results { margin-bottom: 35px; }.api-image { background-color: #dfe2db; }
 .image-one { background-image: url('./assets/hero.png'); }.image-two { background-image: linear-gradient(135deg, #d2b18e, #668188); }.image-three { background-image: linear-gradient(135deg, #c19b70, #61725f); }
 .listing-image button { position: absolute; top: 15px; right: 15px; border: 0; background: white; border-radius: 50%; width: 33px; height: 33px; color: var(--ink); font-size: 20px; }
 .tag { position: absolute; top: 15px; left: 15px; padding: 7px 10px; background: white; color: var(--ink); font-size: 10px; }

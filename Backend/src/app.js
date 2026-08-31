@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const authRoutes = require('./routes/authRoutes');
 const accommodationRoutes = require('./routes/accommodationRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
+const taplineRoutes = require('./routes/taplineRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -27,6 +28,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/reservations', reservationRoutes);
+app.use('/api/tapline', taplineRoutes);
 
 // --- Error handling (must be LAST) ---
 app.use(notFound);
