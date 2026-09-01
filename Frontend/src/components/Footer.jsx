@@ -1,28 +1,53 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
-function Nav({ user, onOpenLogin, onLogout }) {
-  const { pathname } = useLocation()
-  const isActive = (path) => (path === '/' ? pathname === '/' : pathname.startsWith(path))
+const footerColumns = [
+  {
+    title: 'Support',
+    links: ['Help Centre', 'AirCover', 'Anti-discrimination', 'Disability support', 'Cancellation options'],
+  },
+  {
+    title: 'Hosting',
+    links: ['Airbnb your home', 'AirCover for Hosts', 'Hosting resources', 'Community forum'],
+  },
+  {
+    title: 'Airbnb',
+    links: ['Newsroom', 'New features', 'Careers', 'Investors', 'Gift cards'],
+  },
+]
 
+function Footer() {
   return (
-    <nav className="nav container" aria-label="Main navigation">
-      <Link className="brand airbnb-brand" to="/" aria-label="Airbnb home"><span>⌂</span> airbnb</Link>
-      <div className="nav-links">
-        <Link className={isActive('/') && pathname === '/' ? 'nav-tab selected' : 'nav-tab'} to="/">Stays</Link>
-        <Link className={isActive('/trips') ? 'nav-tab selected' : 'nav-tab'} to="/trips">Trips</Link>
-        <Link className={isActive('/host') ? 'nav-tab selected' : 'nav-tab'} to="/host">Host</Link>
+    <footer className="airbnb-footer">
+      <div className="container footer-shell">
+        <div className="footer-brand-row">
+          <Link className="brand airbnb-brand" to="/" aria-label="Airbnb home">airbnb</Link>
+        </div>
+
+        <div className="footer-columns">
+          {footerColumns.map((column) => (
+            <div key={column.title} className="footer-column">
+              <h4>{column.title}</h4>
+              <ul>
+                {column.links.map((link) => (
+                  <li key={link}><Link to="/">{link}</Link></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="nav-actions">
-        <Link className="host-link" to="/host">Airbnb your home</Link>
-        <button className="icon-button" aria-label="Change language">◎</button>
-        {user ? (
-          <button className="profile-button" aria-label="Log out" onClick={onLogout} title={`Log out ${user.name || ''}`}>☰ <span>●</span></button>
-        ) : (
-          <button className="profile-button" aria-label="Open login menu" onClick={onOpenLogin}>☰ <span>●</span></button>
-        )}
+
+      <div className="container footer-bottom">
+        <p>© 2026 Airbnb, Inc.</p>
+        <div className="footer-meta">
+          <span>Privacy</span>
+          <span>Terms</span>
+          <span>Sitemap</span>
+          <span>South Africa</span>
+        </div>
       </div>
-    </nav>
+    </footer>
   )
 }
 
-export default Nav
+export default Footer

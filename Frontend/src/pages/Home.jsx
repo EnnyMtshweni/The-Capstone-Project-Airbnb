@@ -49,20 +49,6 @@ function Home() {
 
   return (
     <>
-      <section className="landing-hero container">
-        <div className="hero-card">
-          <div className="hero-copy-block">
-            <p className="eyebrow dark">South Africa stays</p>
-            <h1>Find a place<br />to feel at home.</h1>
-            <p className="hero-copy">From beach escapes to safari breaks, discover thoughtful stays in the country’s most loved destinations.</p>
-            <Link className="light-button" to="#all-stays">Explore stays</Link>
-          </div>
-          <div className="hero-visual" aria-label="Featured stay in South Africa">
-            <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1200&q=85" alt="Beautiful modern home" />
-          </div>
-        </div>
-      </section>
-
       <section className="container section" id="stay-search">
         <form className="search-panel alt-search" aria-label="Search for a stay" onSubmit={fetchListings}>
           <label className="search-field"><span className="field-label">Where</span><input value={search.destination} onChange={updateSearch('destination')} placeholder="Search South Africa" /></label>
@@ -124,6 +110,44 @@ function Home() {
               <span className="gift-band" />
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="container section help-section">
+        <div className="help-grid">
+          <div className="help-card">
+            <p className="eyebrow dark">Questions about hosting?</p>
+            <h3>Need help with a hosting card?</h3>
+            <p>Learn how to earn, set your pricing, and welcome guests with confidence.</p>
+            <Link to="/host">Explore hosting info</Link>
+          </div>
+          <div className="help-card">
+            <p className="eyebrow dark">Feedback</p>
+            <h3>Tell us how we’re doing</h3>
+            <p>Share ideas, suggestions, and thoughts from your next getaway or home stay.</p>
+            <Link to="#">Send feedback</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="section container" id="future-sa">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow dark">Inspiration for future SA getaways</p>
+            <h2>Plan your next South African escape</h2>
+          </div>
+        </div>
+
+        <div className="inspiration-grid future-grid">
+          {inspirationLocations.map((place) => (
+            <article className="inspiration-card" key={`${place.title}-future`}>
+              <img src={place.image} alt={place.title} />
+              <div className="inspiration-copy">
+                <h3>{place.title}</h3>
+                <p>{place.caption}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
