@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getMyBookings, cancelBooking, getToken, getStoredUser } from '../lib/api'
+import { getMyBookings, cancelBooking, getToken, getStoredUser } from '../Lib/api'
 
 function Trips() {
   const [bookings, setBookings] = useState([])

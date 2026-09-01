@@ -8,7 +8,7 @@ import ListingDetail from './pages/ListingDetail'
 import Trips from './pages/Trips'
 import Host from './pages/Host'
 import Login from './pages/Login'
-import { clearSession, getStoredUser } from './lib/api'
+import { clearSession, getStoredUser } from './Lib/api'
 import './App.css'
 import './pages.css'
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { searchListings, formatCurrency } from '../lib/api'
+import { searchListings, formatCurrency } from '../Lib/api'
 
 const heroImg = 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1800&q=85'
 const fallbackListingImages = [

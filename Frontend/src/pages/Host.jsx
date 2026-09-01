@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getMyListings, createListing, deleteListing, formatCurrency, getToken } from '../lib/api'
+import { getMyListings, createListing, deleteListing, formatCurrency, getToken } from '../Lib/api'
 
 const emptyForm = { title: '', location: '', bedrooms: '1', baths: '1', type: 'Entire home', price_per_night: '', description: '', amenities: '', image_url: '' }
 

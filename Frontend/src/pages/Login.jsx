@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login, setSession } from '../lib/api'
+import { login, setSession } from '../Lib/api'
 
 function Login({ onLoggedIn }) {
   const navigate = useNavigate()

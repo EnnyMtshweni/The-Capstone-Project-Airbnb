@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { login, setSession } from '../lib/api'
+import { login, setSession } from '../Lib/api'
 
 function LoginModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({ email: '', password: '' })

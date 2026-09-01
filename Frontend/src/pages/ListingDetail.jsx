@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getListing, createBooking, formatCurrency, getToken } from '../lib/api'
+import { getListing, createBooking, formatCurrency, getToken } from '../Lib/api'
 
 const nightsBetween = (checkIn, checkOut) => {
   if (!checkIn || !checkOut) return 0
