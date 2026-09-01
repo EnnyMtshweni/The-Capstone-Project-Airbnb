@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
@@ -15,6 +15,11 @@ import './pages.css'
 function App() {
   const [loginOpen, setLoginOpen] = useState(false)
   const [user, setUser] = useState(getStoredUser())
+  const [darkMode, setDarkMode] = useState(false)
+
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', darkMode)
+  }, [darkMode])
 
   const handleLoginSuccess = (data) => {
     setUser(data)
@@ -27,8 +32,8 @@ function App() {
   }
 
   return (
-    <main>
-      <Nav user={user} onOpenLogin={() => setLoginOpen(true)} onLogout={handleLogout} />
+    <main className={darkMode ? 'theme-dark' : 'theme-light'}>
+      <Nav user={user} onOpenLogin={() => setLoginOpen(true)} onLogout={handleLogout} darkMode={darkMode} onToggleDarkMode={() => setDarkMode((current) => !current)} />
 
       <Routes>
         <Route path="/" element={<Home />} />
