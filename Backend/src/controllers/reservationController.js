@@ -3,14 +3,19 @@ const Reservation = require('../models/Reservation');
 const Accommodation = require('../models/Accommodation');
 
 // @desc    Create a reservation (book a stay)
-// @route   POST /api/reservations
-// @access  Private (logged-in guest)
+// @route   POST /api/reservations  |  POST /api/tapline/bookings
+// @access  Private
 const createReservation = asyncHandler(async (req, res) => {
-  const { accommodationId, checkIn, checkOut, numGuests } = req.body;
+  // Accept both naming conventions (tapline body uses listing_id / accommodationId)
+  const accommodationId =
+    req.body.accommodationId || req.body.listing_id || req.body.accommodation_id;
+  const checkIn   = req.body.checkIn   || req.body.check_in;
+  const checkOut  = req.body.checkOut  || req.body.check_out;
+  const numGuests = Number(req.body.numGuests || req.body.guests || 1);
 
-  if (!accommodationId || !checkIn || !checkOut || !numGuests) {
+  if (!accommodationId || !checkIn || !checkOut) {
     res.status(400);
-    throw new Error('Please provide accommodationId, checkIn, checkOut and numGuests');
+    throw new Error('Please provide accommodationId, checkIn and checkOut');
   }
 
   const accommodation = await Accommodation.findById(accommodationId);
@@ -21,18 +26,16 @@ const createReservation = asyncHandler(async (req, res) => {
 
   if (numGuests > accommodation.maxGuests) {
     res.status(400);
-    throw new Error(`This accommodation only allows up to ${accommodation.maxGuests} guests`);
+    throw new Error(`This accommodation allows up to ${accommodation.maxGuests} guests`);
   }
 
-  const nights =
-    (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24);
-
+  const nights = (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24);
   if (nights <= 0) {
     res.status(400);
-    throw new Error('Check-out date must be after check-in date');
+    throw new Error('Check-out must be after check-in');
   }
 
-  const totalPrice = nights * accommodation.pricePerNight;
+  const totalPrice = Math.round(nights * accommodation.pricePerNight);
 
   const reservation = await Reservation.create({
     accommodation: accommodationId,
@@ -41,13 +44,16 @@ const createReservation = asyncHandler(async (req, res) => {
     checkOut,
     numGuests,
     totalPrice,
+    status: 'confirmed',
   });
 
-  res.status(201).json({ success: true, data: reservation });
+  const populated = await reservation.populate('accommodation', 'title location images pricePerNight');
+
+  res.status(201).json({ success: true, data: populated });
 });
 
 // @desc    Get logged-in user's own reservations
-// @route   GET /api/reservations/mine
+// @route   GET /api/reservations/mine  |  GET /api/tapline/bookings/mine
 // @access  Private
 const getMyReservations = asyncHandler(async (req, res) => {
   const reservations = await Reservation.find({ guest: req.user._id })
@@ -69,7 +75,7 @@ const getAllReservations = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, count: reservations.length, data: reservations });
 });
 
-// @desc    Get a single reservation by ID
+// @desc    Get single reservation
 // @route   GET /api/reservations/:id
 // @access  Private (owner or admin)
 const getReservationById = asyncHandler(async (req, res) => {
@@ -91,49 +97,40 @@ const getReservationById = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data: reservation });
 });
 
-// @desc    Update reservation status (e.g. confirm/cancel)
+// @desc    Update reservation status
 // @route   PUT /api/reservations/:id
 // @access  Private (owner or admin)
 const updateReservation = asyncHandler(async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
-
-  if (!reservation) {
-    res.status(404);
-    throw new Error('Reservation not found');
-  }
+  if (!reservation) { res.status(404); throw new Error('Reservation not found'); }
 
   const isOwner = reservation.guest.toString() === req.user._id.toString();
   if (!isOwner && req.user.role !== 'admin') {
-    res.status(403);
-    throw new Error('Not authorized to update this reservation');
+    res.status(403); throw new Error('Not authorized');
   }
 
   reservation.status = req.body.status || reservation.status;
   const updated = await reservation.save();
-
   res.status(200).json({ success: true, data: updated });
 });
 
-// @desc    Delete / cancel a reservation
-// @route   DELETE /api/reservations/:id
+// @desc    Cancel / delete a reservation
+// @route   DELETE /api/reservations/:id  |  DELETE /api/tapline/bookings/:id
 // @access  Private (owner or admin)
 const deleteReservation = asyncHandler(async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
-
-  if (!reservation) {
-    res.status(404);
-    throw new Error('Reservation not found');
-  }
+  if (!reservation) { res.status(404); throw new Error('Reservation not found'); }
 
   const isOwner = reservation.guest.toString() === req.user._id.toString();
   if (!isOwner && req.user.role !== 'admin') {
-    res.status(403);
-    throw new Error('Not authorized to delete this reservation');
+    res.status(403); throw new Error('Not authorized');
   }
 
-  await reservation.deleteOne();
+  // Soft cancel rather than hard delete so history is preserved
+  reservation.status = 'cancelled';
+  await reservation.save();
 
-  res.status(200).json({ success: true, message: 'Reservation deleted' });
+  res.status(200).json({ success: true, message: 'Reservation cancelled', data: { id: reservation._id, status: 'cancelled' } });
 });
 
 module.exports = {

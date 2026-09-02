@@ -1,162 +1,197 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getListing, createBooking, formatCurrency, getToken } from '../Lib/api'
+import { createBooking, formatCurrency, getListing, getToken } from '../Lib/api'
 
-const nightsBetween = (checkIn, checkOut) => {
-  if (!checkIn || !checkOut) return 0
-  const ms = new Date(checkOut) - new Date(checkIn)
-  return Math.max(0, Math.round(ms / (1000 * 60 * 60 * 24)))
+const nights = (ci, co) => {
+  if (!ci || !co) return 0
+  return Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000))
+}
+
+const imgList = (listing) => {
+  const imgs = listing?.images
+  if (Array.isArray(imgs) && imgs.length) return imgs
+  if (typeof imgs === 'string') return imgs.split(' ').filter(Boolean)
+  if (listing?.image_url) return [listing.image_url]
+  return ['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85']
 }
 
 function ListingDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [listing, setListing] = useState(null)
-  const [loadState, setLoadState] = useState({ status: 'loading', message: '' })
-  const [dates, setDates] = useState({ checkIn: '', checkOut: '' })
-  const [guests, setGuests] = useState(2)
-  const [bookingState, setBookingState] = useState({ status: 'idle', message: '' })
+  const { id }       = useParams()
+  const navigate     = useNavigate()
+  const [listing,    setListing]    = useState(null)
+  const [loadState,  setLoadState]  = useState('loading')
+  const [demoNote,   setDemoNote]   = useState('')
+  const [dates,      setDates]      = useState({ checkIn: '', checkOut: '' })
+  const [guests,     setGuests]     = useState(2)
+  const [booking,    setBooking]    = useState({ status: 'idle', msg: '' })
 
   useEffect(() => {
-    let cancelled = false
-    setListing(null)
-    setLoadState((current) => (current.status === 'loading' ? current : { status: 'loading', message: '' }))
+    let live = true
+    setListing(null); setLoadState('loading')
     getListing(id).then(({ data, demo }) => {
-      if (cancelled) return
+      if (!live) return
       setListing(data)
-      setLoadState({ status: 'success', message: demo ? 'Showing sample data — backend not connected yet.' : '' })
+      setLoadState('success')
+      if (demo) setDemoNote('Showing sample data — backend not connected.')
     })
-    return () => { cancelled = true }
+    return () => { live = false }
   }, [id])
 
-  const nights = useMemo(() => nightsBetween(dates.checkIn, dates.checkOut), [dates])
-  const currency = listing?.currency || 'ZAR'
-  const nightlyRate = Number(listing?.price_per_night?.amount ?? listing?.price_per_night ?? 0)
-  const cleaningFee = listing ? Math.round(nightlyRate * 0.15) : 0
-  const serviceFee = listing ? Math.round(nightlyRate * (nights || 1) * 0.08) : 0
-  const total = nights ? nightlyRate * nights + cleaningFee + serviceFee : nightlyRate + cleaningFee
+  const n         = useMemo(() => nights(dates.checkIn, dates.checkOut), [dates])
+  const price     = listing?.pricePerNight || listing?.price_per_night || 0
+  const cleaning  = listing ? Math.round(price * 0.15) : 0
+  const service   = listing ? Math.round(price * (n || 1) * 0.08) : 0
+  const total     = n ? price * n + cleaning + service : price + cleaning
 
-  const handleReserve = async (event) => {
-    event.preventDefault()
-    if (!getToken()) {
-      setBookingState({ status: 'error', message: 'Log in first, then come back to reserve this stay.' })
-      return
-    }
-    if (!dates.checkIn || !dates.checkOut) {
-      setBookingState({ status: 'error', message: 'Choose your check-in and check-out dates.' })
-      return
-    }
-    setBookingState({ status: 'loading', message: '' })
+  const handleReserve = async (e) => {
+    e.preventDefault()
+    if (!getToken()) { setBooking({ status: 'error', msg: 'Please log in first to reserve this stay.' }); return }
+    if (!dates.checkIn || !dates.checkOut) { setBooking({ status: 'error', msg: 'Choose your check-in and check-out dates.' }); return }
+    setBooking({ status: 'loading', msg: '' })
     const { data, demo } = await createBooking({
-      listing_id: id,
-      check_in: dates.checkIn,
-      check_out: dates.checkOut,
-      guests: Number(guests) || 1,
-      currency,
+      accommodationId: id,
+      checkIn:  dates.checkIn,
+      checkOut: dates.checkOut,
+      numGuests: Number(guests) || 1,
     })
-    setBookingState({
+    setBooking({
       status: 'success',
-      message: demo ? `Reserved locally as ${data.id} — connect the backend to send this to tapline.sh.` : `Booked! Confirmation ${data.id}.`,
+      msg: demo
+        ? `Booking saved locally (demo). ID: ${data._id || data.id}`
+        : `🎉 Booked! Confirmation #${data._id || data.id}. Check My Trips for details.`,
     })
   }
 
-  if (loadState.status === 'loading') {
-    return <section className="section container"><p className="listing-empty">Loading listing…</p></section>
-  }
+  if (loadState === 'loading') return (
+    <section className="section container"><SkeletonDetail /></section>
+  )
+  if (!listing) return (
+    <section className="section container">
+      <p className="listing-empty">Listing not found.</p>
+      <button className="text-link" onClick={() => navigate('/')}>← Back to search</button>
+    </section>
+  )
 
-  if (!listing) {
-    return (
-      <section className="section container">
-        <p className="listing-empty">We couldn't find that listing.</p>
-        <button className="text-link" onClick={() => navigate('/')}>Back to search <span>→</span></button>
-      </section>
-    )
-  }
-
-  const images = listing.images?.length ? listing.images : [listing.image_url].filter(Boolean)
+  const images   = imgList(listing)
+  const city     = listing.location?.city || listing.location || 'South Africa'
+  const country  = listing.location?.country || 'South Africa'
+  const amenList = Array.isArray(listing.amenities) ? listing.amenities
+                 : typeof listing.amenities === 'string' ? listing.amenities.split(' ').filter(Boolean) : []
+  const hostName = listing.host?.name || 'your host'
 
   return (
     <section className="section container listing-detail">
-      <button className="text-link back-link" onClick={() => navigate(-1)}>← Back to search</button>
+      <button className="text-link back-link" onClick={() => navigate(-1)}>← Back</button>
 
       <div className="listing-detail-heading">
         <h1 className="listing-detail-title">{listing.title}</h1>
         <p className="listing-detail-sub">
-          {listing.rating ? `★ ${listing.rating}` : ''}{listing.review_count ? ` · ${listing.review_count} reviews` : ''}{listing.location ? ` · ${listing.location}` : ''}
+          {city}, {country} ·{' '}
+          {listing.maxGuests} guests · {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} · {listing.bathrooms} bath{listing.bathrooms !== 1 ? 's' : ''}
         </p>
       </div>
 
-      {loadState.message && <p className="search-message success listing-demo-note">{loadState.message}</p>}
+      {demoNote && <p className="search-message success listing-demo-note">{demoNote}</p>}
 
-      {images.length > 0 && (
-        <div className="listing-gallery">
-          {images.slice(0, 3).map((src, index) => (
-            <div className="listing-gallery-image" key={index} style={{ backgroundImage: `url(${src})` }} />
-          ))}
-        </div>
-      )}
+      {/* Gallery */}
+      <div className="listing-gallery">
+        {images.slice(0, 3).map((src, i) => (
+          <div key={i} className="listing-gallery-image" style={{ backgroundImage: `url(${src})` }} role="img" aria-label={`Photo ${i + 1} of ${listing.title}`} />
+        ))}
+        {images.length === 1 && <div className="listing-gallery-image" style={{ backgroundImage: `url(${images[0]})` }} />}
+        {images.length === 2 && <div className="listing-gallery-image" style={{ backgroundImage: `url(${images[1]})` }} />}
+      </div>
 
       <div className="listing-detail-grid">
+        {/* Main content */}
         <div className="listing-detail-main">
-          <h2 className="listing-detail-hosted-by">Hosted by {listing.host?.name || 'your host'}</h2>
-          <p className="listing-detail-facts">{listing.guests} guests · {listing.bedrooms} bedrooms · {listing.beds} beds · {listing.baths} bath</p>
+          <h2 className="listing-detail-hosted-by">Hosted by {hostName}</h2>
+          <p className="listing-detail-facts">
+            {listing.maxGuests} guests · {listing.bedrooms} bedroom{listing.bedrooms !== 1 ? 's' : ''} · {listing.bathrooms} bathroom{listing.bathrooms !== 1 ? 's' : ''}
+          </p>
 
-          <p className="listing-detail-description">{listing.description}</p>
+          {listing.description && (
+            <p className="listing-detail-description">{listing.description}</p>
+          )}
 
-          {listing.amenities?.length > 0 && (
+          {amenList.length > 0 && (
             <div className="amenities-block">
               <h3>What this place offers</h3>
               <ul className="amenities-list">
-                {listing.amenities.map((item) => <li key={item}>{item}</li>)}
+                {amenList.map(a => <li key={a}>✓ {a}</li>)}
               </ul>
             </div>
           )}
 
-          {listing.reviews?.length > 0 && (
-            <div className="reviews-block">
-              <h3>Reviews</h3>
-              <div className="reviews-grid">
-                {listing.reviews.map((review, index) => (
-                  <div className="review-card" key={index}>
-                    <p className="review-author">{review.name} <span>{review.date}</span></p>
-                    <p className="review-body">{review.body}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {listing.host && (
-            <div className="host-block">
-              <h3>Hosted by {listing.host.name}</h3>
-              <p>Joined {listing.host.joined}{listing.host.reviews ? ` · ${listing.host.reviews} reviews` : ''}{listing.host.superhost ? ' · Superhost' : ''}</p>
-            </div>
-          )}
+          {/* SA location highlight */}
+          <div className="location-block">
+            <h3>Location</h3>
+            <p>{listing.location?.address ? `${listing.location.address}, ` : ''}{city}, {country}</p>
+            <p className="listing-detail-facts" style={{ marginTop: 6 }}>
+              All prices in South African Rand (ZAR)
+            </p>
+          </div>
         </div>
 
+        {/* Booking card */}
         <form className="booking-card" onSubmit={handleReserve}>
-          <p className="booking-price"><strong>{formatCurrency(nightlyRate, currency)}</strong> / night</p>
-          <div className="booking-dates">
-            <label className="search-field"><span className="field-label">Check in</span><input type="date" value={dates.checkIn} onChange={(event) => setDates((d) => ({ ...d, checkIn: event.target.value }))} required /></label>
-            <label className="search-field"><span className="field-label">Check out</span><input type="date" value={dates.checkOut} onChange={(event) => setDates((d) => ({ ...d, checkOut: event.target.value }))} required /></label>
-          </div>
-          <label className="search-field"><span className="field-label">Guests</span><input type="number" min="1" max={listing.guests || 16} value={guests} onChange={(event) => setGuests(event.target.value)} /></label>
+          <p className="booking-price">
+            <strong>{formatCurrency(price)}</strong> <span>/ night</span>
+          </p>
 
-          <button className="login-submit reserve-button" type="submit" disabled={bookingState.status === 'loading'}>
-            {bookingState.status === 'loading' ? 'Reserving…' : 'Reserve'}
+          <div className="booking-dates">
+            <label className="search-field">
+              <span className="field-label">Check in</span>
+              <input type="date" value={dates.checkIn} min={new Date().toISOString().split('T')[0]}
+                onChange={e => setDates(d => ({ ...d, checkIn: e.target.value }))} required />
+            </label>
+            <label className="search-field">
+              <span className="field-label">Check out</span>
+              <input type="date" value={dates.checkOut} min={dates.checkIn || new Date().toISOString().split('T')[0]}
+                onChange={e => setDates(d => ({ ...d, checkOut: e.target.value }))} required />
+            </label>
+          </div>
+
+          <label className="search-field" style={{ borderRadius: 8, border: '1px solid var(--line)', margin: '0 0 12px' }}>
+            <span className="field-label">Guests</span>
+            <input type="number" min="1" max={listing.maxGuests || 16} value={guests}
+              onChange={e => setGuests(e.target.value)} />
+          </label>
+
+          <button className="login-submit reserve-button" type="submit" disabled={booking.status === 'loading'}>
+            {booking.status === 'loading' ? 'Reserving…' : 'Reserve'}
           </button>
 
-          {bookingState.message && <p className={`login-message ${bookingState.status}`}>{bookingState.message}</p>}
+          {booking.msg && (
+            <p className={`login-message ${booking.status}`} role="alert">{booking.msg}</p>
+          )}
 
           <div className="booking-breakdown">
-            {nights > 0 && <div><span>{formatCurrency(nightlyRate, currency)} × {nights} nights</span><span>{formatCurrency(nightlyRate * nights, currency)}</span></div>}
-            <div><span>Cleaning fee</span><span>{formatCurrency(cleaningFee, currency)}</span></div>
-            <div><span>Service fee</span><span>{formatCurrency(serviceFee, currency)}</span></div>
-            <div className="booking-total"><span>Total</span><span>{formatCurrency(total, currency)}</span></div>
+            {n > 0 && (
+              <div><span>{formatCurrency(price)} × {n} night{n !== 1 ? 's' : ''}</span><span>{formatCurrency(price * n)}</span></div>
+            )}
+            <div><span>Cleaning fee</span><span>{formatCurrency(cleaning)}</span></div>
+            <div><span>Service fee</span><span>{formatCurrency(service)}</span></div>
+            <div className="booking-total"><span>Total (ZAR)</span><span>{formatCurrency(total)}</span></div>
           </div>
         </form>
       </div>
     </section>
+  )
+}
+
+function SkeletonDetail() {
+  return (
+    <div style={{ paddingBottom: 80 }}>
+      <div className="skeleton-line wide" style={{ height: 32, marginBottom: 16, borderRadius: 8 }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 10, marginBottom: 32 }}>
+        <div className="skeleton-img" style={{ borderRadius: 12, aspectRatio: '1' }} />
+        <div className="skeleton-img" style={{ borderRadius: 12, aspectRatio: '1' }} />
+        <div className="skeleton-img" style={{ borderRadius: 12, aspectRatio: '1' }} />
+      </div>
+      <div className="skeleton-line wide" style={{ height: 20, marginBottom: 10, borderRadius: 6 }} />
+      <div className="skeleton-line narrow" style={{ height: 14, borderRadius: 6 }} />
+    </div>
   )
 }
 

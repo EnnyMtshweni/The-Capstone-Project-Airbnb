@@ -3,15 +3,47 @@ import { Link } from 'react-router-dom'
 const footerColumns = [
   {
     title: 'Support',
-    links: ['Help Centre', 'AirCover', 'Anti-discrimination', 'Disability support', 'Cancellation options'],
+    links: [
+      { label: 'Help Centre',           to: '/' },
+      { label: 'AirCover',              to: '/' },
+      { label: 'Anti-discrimination',   to: '/' },
+      { label: 'Disability support',    to: '/' },
+      { label: 'Cancellation options',  to: '/' },
+      { label: 'Report a concern',      to: '/' },
+    ],
   },
   {
     title: 'Hosting',
-    links: ['Airbnb your home', 'AirCover for Hosts', 'Hosting resources', 'Community forum'],
+    links: [
+      { label: 'Airbnb your home',      to: '/host' },
+      { label: 'AirCover for Hosts',    to: '/host' },
+      { label: 'Hosting resources',     to: '/host' },
+      { label: 'Community forum',       to: '/' },
+      { label: 'Hosting responsibly',   to: '/' },
+      { label: 'Join a free class',     to: '/' },
+    ],
   },
   {
     title: 'Airbnb',
-    links: ['Newsroom', 'New features', 'Careers', 'Investors', 'Gift cards'],
+    links: [
+      { label: 'Newsroom',              to: '/' },
+      { label: 'New features',          to: '/' },
+      { label: 'Careers',               to: '/' },
+      { label: 'Investors',             to: '/' },
+      { label: 'Gift cards',            to: '/' },
+      { label: 'Airbnb.org',            to: '/' },
+    ],
+  },
+  {
+    title: 'Destinations',
+    links: [
+      { label: 'Cape Town',             to: '/' },
+      { label: 'Johannesburg',          to: '/' },
+      { label: 'Durban',                to: '/' },
+      { label: 'Garden Route',          to: '/' },
+      { label: 'Kruger National Park',  to: '/' },
+      { label: 'Stellenbosch',          to: '/' },
+    ],
   },
 ]
 
@@ -24,12 +56,14 @@ function Footer() {
         </div>
 
         <div className="footer-columns">
-          {footerColumns.map((column) => (
-            <div key={column.title} className="footer-column">
-              <h4>{column.title}</h4>
+          {footerColumns.map((col) => (
+            <div key={col.title} className="footer-column">
+              <h4>{col.title}</h4>
               <ul>
-                {column.links.map((link) => (
-                  <li key={link}><Link to="/">{link}</Link></li>
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <Link to={link.to}>{link.label}</Link>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -38,13 +72,13 @@ function Footer() {
       </div>
 
       <div className="container footer-bottom">
-        <p>© 2026 Airbnb, Inc.</p>
-        <div className="footer-meta">
-          <span>Privacy</span>
-          <span>Terms</span>
-          <span>Sitemap</span>
-          <span>South Africa</span>
-        </div>
+        <p style={{ margin: 0 }}>© 2026 Airbnb, Inc. · South Africa</p>
+        <nav className="footer-meta" aria-label="Footer links">
+          <Link to="/">Privacy</Link>
+          <Link to="/">Terms</Link>
+          <Link to="/">Sitemap</Link>
+          <Link to="/">Your Privacy Choices</Link>
+        </nav>
       </div>
     </footer>
   )
