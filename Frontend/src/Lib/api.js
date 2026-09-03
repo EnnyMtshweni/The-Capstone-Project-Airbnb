@@ -159,3 +159,82 @@ export const formatCurrency = (amount, currency = 'ZAR') => {
     ? new Intl.NumberFormat('en-ZA', { style: 'currency', currency, maximumFractionDigits: 0 }).format(v)
     : 'Price on request'
 }
+
+// ── Admin API ─────────────────────────────────────────────────────────────────
+// All admin calls require a valid JWT from an account with role === 'admin'.
+// Falls back to rich demo data so the UI stays usable without a live backend.
+
+const adminDemoStats = {
+  totalListings: 18, totalReservations: 3, totalUsers: 5,
+  revenue: 39100,
+  recentReservations: [],
+}
+
+/** GET /api/admin/stats */
+export const adminGetStats = () =>
+  withFallback(async () => {
+    const payload = await request('/api/admin/stats', { auth: true })
+    return { data: payload.data ?? payload, demo: false }
+  }, adminDemoStats)
+
+/** GET /api/admin/listings — all listings (admin sees inactive too) */
+export const adminGetAllListings = () =>
+  withFallback(async () => {
+    const payload = await request('/api/admin/listings', { auth: true })
+    const list = Array.isArray(payload) ? payload : (payload.data ?? [])
+    return { data: list.map(normaliseAccommodation), demo: false }
+  }, SA_DEMO)
+
+/** PUT /api/accommodations/:id — update listing fields */
+export const adminUpdateListing = (id, body) =>
+  withFallback(async () => {
+    const payload = await request(`/api/accommodations/${id}`, { method: 'PUT', auth: true, body })
+    return { data: normaliseAccommodation(payload.data ?? payload), demo: false }
+  }, { _id: id, ...body })
+
+/** DELETE /api/accommodations/:id */
+export const adminDeleteListing = (id) =>
+  withFallback(async () => {
+    const payload = await request(`/api/accommodations/${id}`, { method: 'DELETE', auth: true })
+    return { data: payload.data ?? payload, demo: false }
+  }, { id, status: 'deleted (demo)' })
+
+/** GET /api/admin/reservations — all reservations */
+export const adminGetAllReservations = () =>
+  withFallback(async () => {
+    const payload = await request('/api/admin/reservations', { auth: true })
+    const list = Array.isArray(payload) ? payload : (payload.data ?? [])
+    return { data: list, demo: false }
+  }, [
+    { _id: 'adm_bk1', accommodation: { title: 'Clifton Beachfront Villa',  location: { city: 'Cape Town'  } }, guest: { name: 'Thabo Nkosi',   email: 'thabo@example.com'  }, checkIn: '2026-10-10', checkOut: '2026-10-14', numGuests: 2, totalPrice: 16800, status: 'confirmed' },
+    { _id: 'adm_bk2', accommodation: { title: 'Sandton Luxury Apartment',  location: { city: 'Sandton'    } }, guest: { name: 'Lindiwe Dube',  email: 'lindiwe@example.com' }, checkIn: '2026-11-01', checkOut: '2026-11-03', numGuests: 2, totalPrice:  3300, status: 'confirmed' },
+    { _id: 'adm_bk3', accommodation: { title: 'Kruger Bush Lodge',         location: { city: 'Hoedspruit' } }, guest: { name: 'Sipho Mokoena', email: 'sipho@example.com'  }, checkIn: '2026-12-20', checkOut: '2026-12-25', numGuests: 4, totalPrice: 19000, status: 'pending'   },
+  ])
+
+/** PATCH /api/admin/reservations/:id/status */
+export const adminUpdateReservationStatus = (id, status) =>
+  withFallback(async () => {
+    const payload = await request(`/api/admin/reservations/${id}/status`, { method: 'PATCH', auth: true, body: { status } })
+    return { data: payload.data ?? payload, demo: false }
+  }, { _id: id, status })
+
+/** GET /api/admin/users */
+export const adminGetUsers = () =>
+  withFallback(async () => {
+    const payload = await request('/api/admin/users', { auth: true })
+    const list = Array.isArray(payload) ? payload : (payload.data ?? [])
+    return { data: list, demo: false }
+  }, [
+    { _id: 'u1', name: 'SA Admin',      email: 'admin@airbnb-sa.com',      role: 'admin', createdAt: '2026-09-01' },
+    { _id: 'u2', name: 'Thabo Nkosi',   email: 'thabo@example.com',         role: 'guest', createdAt: '2026-09-02' },
+    { _id: 'u3', name: 'Lindiwe Dube',  email: 'lindiwe@example.com',       role: 'guest', createdAt: '2026-09-02' },
+    { _id: 'u4', name: 'SA Host',       email: 'seed-host@airbnb-sa.com',   role: 'host',  createdAt: '2026-09-02' },
+    { _id: 'u5', name: 'Sipho Mokoena', email: 'sipho@example.com',         role: 'guest', createdAt: '2026-09-03' },
+  ])
+
+/** PATCH /api/admin/users/:id/role */
+export const adminUpdateUserRole = (id, role) =>
+  withFallback(async () => {
+    const payload = await request(`/api/admin/users/${id}/role`, { method: 'PATCH', auth: true, body: { role } })
+    return { data: payload.data ?? payload, demo: false }
+  }, { _id: id, role })

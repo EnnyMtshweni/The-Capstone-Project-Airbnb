@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const accommodationRoutes = require('./routes/accommodationRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 const taplineRoutes = require('./routes/taplineRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/tapline', taplineRoutes);
+app.use('/api/admin', adminRoutes);
 
 // --- Error handling (must be LAST) ---
 app.use(notFound);
