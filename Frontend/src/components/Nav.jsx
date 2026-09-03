@@ -57,7 +57,16 @@ function Nav({ user, onOpenLogin, onLogout, darkMode, onToggleDarkMode, onSearch
         </div>
 
         <div className="nav-actions">
-          <Link className="host-link" to="/host">Become a host</Link>
+          {/* Admin shortcut — only visible to admin users */}
+          {user?.role === 'admin' && (
+            <Link className="admin-nav-link" to="/admin" title="Open Admin Dashboard">
+              ⚙ Admin
+            </Link>
+          )}
+          {/* Show "Become a host" only when no user, or user is not admin */}
+          {(!user || user.role !== 'admin') && (
+            <Link className="host-link" to="/host">Become a host</Link>
+          )}
           <button type="button" className="icon-button" aria-label="Toggle dark mode" onClick={onToggleDarkMode}>
             {darkMode ? '☀' : '☾'}
           </button>

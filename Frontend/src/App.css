@@ -1155,3 +1155,19 @@ h2 {
   .trip-item-img { display: none; }
   .province-bar { top: 108px; }
 }
+
+/* Admin shortcut in public nav */
+.admin-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: var(--coral);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .15s;
+}
+.admin-nav-link:hover { background: #d63e3a; }
