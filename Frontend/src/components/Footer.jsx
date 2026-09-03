@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import AirbnbLogo from './AirbnbLogo'
 
 const footerColumns = [
   {
@@ -52,7 +53,10 @@ function Footer() {
     <footer className="airbnb-footer">
       <div className="container footer-shell">
         <div className="footer-brand-row">
-          <Link className="brand airbnb-brand" to="/" aria-label="Airbnb home">airbnb</Link>
+          <Link className="brand airbnb-brand" to="/" aria-label="Airbnb home">
+            <AirbnbLogo />
+            <span>airbnb</span>
+          </Link>
         </div>
 
         <div className="footer-columns">

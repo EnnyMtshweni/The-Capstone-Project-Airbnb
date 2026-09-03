@@ -4,34 +4,36 @@
  */
 require('dotenv').config();
 const mongoose = require('mongoose');
-const bcrypt   = require('bcryptjs');
-const User     = require('./src/models/User');
+const User = require('./src/models/User');
 
 async function run() {
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 15000 });
   console.log('✅ Connected to MongoDB');
 
   const email = 'admin@airbnb-sa.com';
-  const existing = await User.findOne({ email });
+  const password = 'Admin@1234';
+  const existing = await User.findOne({ email }).select('+password');
 
   if (existing) {
     console.log(`ℹ️  Admin already exists: ${email}  (role: ${existing.role})`);
-    // Ensure role is admin in case it was created differently
+
     if (existing.role !== 'admin') {
       existing.role = 'admin';
       await existing.save();
       console.log('✅  Role corrected to admin');
     }
+
+    existing.password = password;
+    await existing.save();
+    console.log('✅  Admin password reset to the correct value');
   } else {
-    // Hash manually because we're bypassing the pre-save hook via create()
-    const hashed = await bcrypt.hash('Admin@1234', 10);
     await User.create({
-      name:     'SA Admin',
+      name: 'SA Admin',
       email,
-      password: hashed,
-      role:     'admin',
+      password,
+      role: 'admin',
     });
-    console.log(`✅  Admin created:  ${email}  /  Admin@1234`);
+    console.log(`✅  Admin created:  ${email}  /  ${password}`);
   }
 
   await mongoose.disconnect();

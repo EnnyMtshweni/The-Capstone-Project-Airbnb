@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { adminDeleteListing, adminGetAllListings, formatCurrency } from '../Lib/api'
+import { adminDeleteListing, adminGetAllListings, formatCurrency, getMyListings, getStoredUser } from '../Lib/api'
 
 const placeholder = 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=120&q=70'
 
@@ -16,7 +16,10 @@ function AdminListings() {
   const [confirm,  setConfirm]  = useState(null) // id to confirm-delete
 
   useEffect(() => {
-    adminGetAllListings().then(({ data }) => {
+    const user = getStoredUser()
+    const loadListings = user?.role === 'host' ? getMyListings : adminGetAllListings
+
+    loadListings().then(({ data }) => {
       setListings(data)
       setStatus('ready')
     })

@@ -56,10 +56,15 @@
   text-decoration: none;
 }
 .adm-brand-logo {
+  width: 42px;
+  height: 42px;
+}
+.admin-logo-image { width: 42px; height: 42px; flex-shrink: 0; }
+.adm-brand-word {
+  color: var(--adm-coral);
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -1px;
-  color: var(--adm-coral);
 }
 .adm-brand-pill {
   background: var(--adm-coral);

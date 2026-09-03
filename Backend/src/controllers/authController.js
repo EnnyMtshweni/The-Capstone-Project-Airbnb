@@ -7,22 +7,14 @@ const generateToken = require('../utils/generateToken');
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
+  const safeRole = role === 'host' ? 'host' : 'guest';
 
-  if (!name || !email || !password) {
-    res.status(400);
-    throw new Error('Please provide name, email and password');
-  }
-
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    res.status(400);
-    throw new Error('A user with that email already exists');
-  }
-
-  // Only allow "guest" or "host" from public signup - never let someone self-register as admin
-  const allowedRole = role === 'host' ? 'host' : 'guest';
-
-  const user = await User.create({ name, email, password, role: allowedRole });
+  const user = await User.create({
+    name,
+    email,
+    password,
+    role: safeRole,
+  });
 
   res.status(201).json({
     success: true,
@@ -40,19 +32,18 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
-  if (!email || !password) {
-    res.status(400);
-    throw new Error('Please provide email and password');
-  }
-
-  // .select('+password') because the schema hides password by default
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.matchPassword(password))) {
     res.status(401);
     throw new Error('Invalid email or password');
+  }
+
+  if (role && role !== user.role) {
+    res.status(403);
+    throw new Error('This account is not assigned to that login type.');
   }
 
   res.status(200).json({

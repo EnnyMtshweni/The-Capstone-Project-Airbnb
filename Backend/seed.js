@@ -6,7 +6,6 @@
 
 require('dotenv').config();
 const mongoose = require('mongoose');
-const bcrypt   = require('bcryptjs');
 const User     = require('./src/models/User');
 const Accommodation = require('./src/models/Accommodation');
 
@@ -285,17 +284,21 @@ async function seed() {
   }
 
   // Create or reuse seed host
-  let host = await User.findOne({ email: 'seed-host@airbnb-sa.com' });
+  const hostEmail = 'seed-host@airbnb-sa.com';
+  const hostPassword = 'Seed@1234';
+  let host = await User.findOne({ email: hostEmail }).select('+password');
   if (!host) {
-    const hashed = await bcrypt.hash('Seed@1234', 10);
     host = await User.create({
       name: 'SA Host',
-      email: 'seed-host@airbnb-sa.com',
-      password: hashed,
+      email: hostEmail,
+      password: hostPassword,
       role: 'host',
     });
     console.log('👤 Created seed host:', host.email);
   } else {
+    host.password = hostPassword;
+    host.role = 'host';
+    await host.save();
     console.log('👤 Reusing existing seed host:', host.email);
   }
 

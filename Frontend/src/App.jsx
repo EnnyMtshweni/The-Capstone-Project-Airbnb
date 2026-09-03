@@ -6,7 +6,7 @@
  * Flat <Routes> tree — no nested <Routes> (React Router v7 requirement).
  */
 import { useEffect, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 // Public shell
 import Nav        from './components/Nav'
@@ -39,7 +39,8 @@ import './admin/admin.css'
  * PublicShell — provides Nav, Footer, LoginModal for all public pages.
  * Manages its own auth + search state so admin routes are fully isolated.
  */
-function PublicShell() {
+function PublicShell({ children }) {
+  const location        = useLocation()
   const [loginOpen,     setLoginOpen]  = useState(false)
   const [user,          setUser]       = useState(getStoredUser())
   const [darkMode,      setDarkMode]   = useState(false)
@@ -59,6 +60,14 @@ function PublicShell() {
   const handleLoginSuccess = data => { setUser(data); setLoginOpen(false) }
   const handleLogout       = ()   => { clearSession(); setUser(null) }
 
+  const publicPage = location.pathname === '/'
+    ? <Home search={search} onSearchChange={handleSearchChange} triggerSearch={triggerSearch} />
+    : location.pathname === '/login' ? <Login onLoggedIn={setUser} />
+    : location.pathname === '/host' ? <Host />
+    : location.pathname === '/trips' ? <Trips />
+    : location.pathname.startsWith('/listing/') ? <ListingDetail />
+    : <Navigate to="/" replace />
+
   return (
     <main className={darkMode ? 'theme-dark' : 'theme-light'}>
       <Nav
@@ -72,24 +81,7 @@ function PublicShell() {
         onSearch={() => setTrigger(n => n + 1)}
       />
 
-      {/* Inner routes rendered here — still a single flat <Routes> at the top level */}
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Home
-              search={search}
-              onSearchChange={handleSearchChange}
-              triggerSearch={triggerSearch}
-            />
-          }
-        />
-        <Route path="/listing/:id" element={<ListingDetail />} />
-        <Route path="/trips"       element={<Trips />} />
-        <Route path="/host"        element={<Host />} />
-        <Route path="/login"       element={<Login onLoggedIn={handleLoginSuccess} />} />
-      </Routes>
-
+      {children || publicPage}
       <Footer />
       {loginOpen && (
         <LoginModal
@@ -109,19 +101,20 @@ function PublicShell() {
 export default function App() {
   return (
     <Routes>
-      {/* ── Admin (no public Nav) ────────────────────── */}
+      <Route path="/listing/:id" element={<PublicShell><ListingDetail /></PublicShell>} />
+      <Route path="/*" element={<PublicShell />} />
+
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminLayout />}>
-        <Route index                     element={<AdminDashboard />} />
-        <Route path="listings"           element={<AdminListings />} />
-        <Route path="listings/new"       element={<AdminCreateListing />} />
-        <Route path="listings/:id/edit"  element={<AdminEditListing />} />
-        <Route path="reservations"       element={<AdminReservations />} />
-        <Route path="users"              element={<AdminUsers />} />
+        <Route index element={<AdminDashboard />} />
+        <Route path="listings" element={<AdminListings />} />
+        <Route path="listings/new" element={<AdminCreateListing />} />
+        <Route path="listings/:id/edit" element={<AdminEditListing />} />
+        <Route path="reservations" element={<AdminReservations />} />
+        <Route path="users" element={<AdminUsers />} />
       </Route>
 
-      {/* ── Public (Nav + Footer shell) ──────────────── */}
-      <Route path="/*" element={<PublicShell />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

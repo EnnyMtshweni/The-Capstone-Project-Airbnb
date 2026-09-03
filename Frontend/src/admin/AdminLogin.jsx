@@ -6,64 +6,77 @@
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login, setSession } from '../Lib/api'
+import { login } from '../Lib/api'
+import AirbnbLogo from '../components/AirbnbLogo'
 
-function AdminLogin() {
+function AdminLogin({ onLoggedIn }) {
   const navigate = useNavigate()
-  const [form,   setForm]   = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
-  const [status, setStatus] = useState('idle') // idle | loading | error
-  const [msg,    setMsg]    = useState('')
+  const [status, setStatus] = useState('idle')
+  const [msg, setMsg] = useState('')
 
-  /* ── Validation ────────────────────────────────────────────── */
   const validate = () => {
-    const e = {}
-    if (!form.email.trim())
-      e.email = 'Email is required.'
-    else if (!/^\S+@\S+\.\S+$/.test(form.email))
-      e.email = 'Enter a valid email address.'
-    if (!form.password)
-      e.password = 'Password is required.'
-    else if (form.password.length < 6)
-      e.password = 'Password must be at least 6 characters.'
-    return e
+    const nextErrors = {}
+
+    if (!form.email.trim()) {
+      nextErrors.email = 'Email is required.'
+    } else if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+      nextErrors.email = 'Enter a valid email address.'
+    }
+
+    if (!form.password) {
+      nextErrors.password = 'Password is required.'
+    } else if (form.password.length < 6) {
+      nextErrors.password = 'Password must be at least 6 characters.'
+    }
+
+    return nextErrors
   }
 
-  const set = field => e => {
-    setForm(p => ({ ...p, [field]: e.target.value }))
-    // Clear field error on change
-    if (errors[field]) setErrors(p => ({ ...p, [field]: '' }))
+  const handleFieldChange = (field) => (event) => {
+    const value = event.target.value
+    setForm((prev) => ({ ...prev, [field]: value }))
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }))
+    }
   }
 
-  /* ── Submit ─────────────────────────────────────────────────── */
-  const handleSubmit = async e => {
-    e.preventDefault()
-    const errs = validate()
-    if (Object.keys(errs).length) { setErrors(errs); return }
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    const nextErrors = validate()
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors)
+      setStatus('error')
+      setMsg('Please fix the highlighted fields.')
+      return
+    }
 
     setStatus('loading')
     setMsg('')
+
     try {
-      const data = await login({ email: form.email, password: form.password })
-      if (data.role !== 'admin') {
-        setStatus('error')
-        setMsg('Access denied. This dashboard is for admins only.')
-        return
+      const data = await login({ email: form.email, password: form.password, role: 'admin' })
+
+      if (data?.role !== 'admin') {
+        throw new Error('This account is not an admin account.')
       }
-      setSession(data)
-      setStatus('idle')
-      navigate('/admin')
-    } catch (err) {
+
+      onLoggedIn?.(data)
+      navigate('/admin', { replace: true })
+    } catch (error) {
       setStatus('error')
-      setMsg(err.message || 'Login failed. Check your credentials.')
+      setMsg(error.message || 'Admin login failed.')
     }
   }
 
   return (
     <div className="admin-login-page">
       <div className="admin-login-card">
-        {/* Logo */}
         <div className="admin-login-logo">
+          <AirbnbLogo className="admin-login-logo-image" />
           <span className="admin-logo-text">airbnb</span>
           <span className="admin-login-badge">Admin</span>
         </div>
@@ -74,14 +87,13 @@ function AdminLogin() {
         </p>
 
         <form onSubmit={handleSubmit} noValidate>
-          {/* Email */}
           <div className={`adm-field${errors.email ? ' has-error' : ''}`}>
             <label htmlFor="adm-email">Email address</label>
             <input
               id="adm-email"
               type="email"
               value={form.email}
-              onChange={set('email')}
+              onChange={handleFieldChange('email')}
               placeholder="admin@airbnb-sa.com"
               autoComplete="email"
               autoFocus
@@ -89,30 +101,26 @@ function AdminLogin() {
             {errors.email && <span className="adm-field-error">{errors.email}</span>}
           </div>
 
-          {/* Password */}
           <div className={`adm-field${errors.password ? ' has-error' : ''}`}>
             <label htmlFor="adm-password">Password</label>
             <input
               id="adm-password"
               type="password"
               value={form.password}
-              onChange={set('password')}
+              onChange={handleFieldChange('password')}
               placeholder="••••••••"
               autoComplete="current-password"
             />
             {errors.password && <span className="adm-field-error">{errors.password}</span>}
           </div>
 
-          {/* Global error */}
           {status === 'error' && msg && (
-            <p className="adm-form-error" role="alert">{msg}</p>
+            <p className="adm-form-error" role="alert">
+              {msg}
+            </p>
           )}
 
-          <button
-            className="adm-login-btn"
-            type="submit"
-            disabled={status === 'loading'}
-          >
+          <button className="adm-login-btn" type="submit" disabled={status === 'loading'}>
             {status === 'loading' ? 'Signing in…' : 'Sign in'}
           </button>
         </form>

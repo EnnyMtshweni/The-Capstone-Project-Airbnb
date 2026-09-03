@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import AirbnbLogo from './AirbnbLogo'
 
 const navItems = [
   { id: 'all',         label: 'All',         icon: 'globe'    },
@@ -30,6 +32,16 @@ function Icon({ type }) {
 function Nav({ user, onOpenLogin, onLogout, darkMode, onToggleDarkMode, onSearch, searchValues, onSearchChange }) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef(null)
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) setProfileOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -40,7 +52,10 @@ function Nav({ user, onOpenLogin, onLogout, darkMode, onToggleDarkMode, onSearch
   return (
     <header className="top-header">
       <nav className="nav container" aria-label="Main navigation">
-        <Link className="brand airbnb-brand" to="/" aria-label="Airbnb home">airbnb</Link>
+        <Link className="brand airbnb-brand" to="/" aria-label="Airbnb home">
+          <AirbnbLogo />
+          <span>airbnb</span>
+        </Link>
 
         <div className="nav-links" role="tablist" aria-label="Navigation categories">
           {navItems.map((item) => (
@@ -63,18 +78,43 @@ function Nav({ user, onOpenLogin, onLogout, darkMode, onToggleDarkMode, onSearch
               ⚙ Admin
             </Link>
           )}
-          {/* Show "Become a host" only when no user, or user is not admin */}
+          {/* Host onboarding is handled through the dashboard sign-in page. */}
           {(!user || user.role !== 'admin') && (
-            <Link className="host-link" to="/host">Become a host</Link>
+            <button className="host-link" type="button" onClick={() => navigate('/admin/login')}>
+              Sign up as a host
+            </button>
           )}
           <button type="button" className="icon-button" aria-label="Toggle dark mode" onClick={onToggleDarkMode}>
             {darkMode ? '☀' : '☾'}
           </button>
           {user ? (
-            <button className="profile-button" aria-label="Log out" onClick={onLogout} title={`Log out ${user.name || ''}`}>
-              <span className="menu-bars"><span /><span /><span /></span>
-              <span className="user-avatar">{(user.name || 'U')[0].toUpperCase()}</span>
-            </button>
+            <div className="profile-menu" ref={profileRef}>
+              <button
+                className="profile-button"
+                aria-label="Open my profile"
+                aria-expanded={profileOpen}
+                aria-haspopup="menu"
+                onClick={() => setProfileOpen(value => !value)}
+                title="My profile"
+              >
+                <span className="menu-bars"><span /><span /><span /></span>
+                <span className="user-avatar">{(user.name || 'U')[0].toUpperCase()}</span>
+              </button>
+              {profileOpen && (
+                <div className="profile-dropdown" role="menu">
+                  <div className="profile-dropdown-header">
+                    <strong>{user.name || 'My profile'}</strong>
+                    <span>{user.email}</span>
+                  </div>
+                  <Link className="profile-dropdown-item" to="/trips" role="menuitem" onClick={() => setProfileOpen(false)}>
+                    My reservations
+                  </Link>
+                  <button className="profile-dropdown-item profile-dropdown-logout" role="menuitem" onClick={() => { setProfileOpen(false); onLogout() }}>
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <button className="profile-button" aria-label="Open login menu" onClick={onOpenLogin}>
               <span className="menu-bars"><span /><span /><span /></span>

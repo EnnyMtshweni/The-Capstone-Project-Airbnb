@@ -99,11 +99,15 @@ export const getListing = (id) =>
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const login = async (credentials) => {
   const payload = await request('/api/auth/login', { method: 'POST', body: credentials })
-  return payload.data ?? payload
+  const data = payload.data ?? payload
+  setSession(data)
+  return data
 }
 export const register = async (body) => {
   const payload = await request('/api/auth/register', { method: 'POST', body })
-  return payload.data ?? payload
+  const data = payload.data ?? payload
+  setSession(data)
+  return data
 }
 
 // ── Reservations ──────────────────────────────────────────────────────────────

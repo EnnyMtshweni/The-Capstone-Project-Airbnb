@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { clearSession, getStoredUser } from '../Lib/api'
+import AirbnbLogo from '../components/AirbnbLogo'
 
 const NAV_LINKS = [
   { to: '/admin',              label: 'Dashboard',    icon: '▦'  },
@@ -23,9 +24,11 @@ function AdminLayout() {
   const [drop, setDrop] = useState(false)
   const dropRef         = useRef(null)
 
-  // Guard: redirect non-admins
+  // Guard: redirect guests; allow admins and hosts into the dashboard
   useEffect(() => {
-    if (!user || user.role !== 'admin') navigate('/admin/login', { replace: true })
+    if (!user || (user.role !== 'admin' && user.role !== 'host')) {
+      navigate('/admin/login', { replace: true })
+    }
   }, [user, navigate])
 
   // Close dropdown on outside click
@@ -42,7 +45,7 @@ function AdminLayout() {
     navigate('/admin/login', { replace: true })
   }
 
-  if (!user || user.role !== 'admin') return null
+  if (!user || (user.role !== 'admin' && user.role !== 'host')) return null
 
   return (
     <div className="adm-shell">
@@ -50,7 +53,8 @@ function AdminLayout() {
       <aside className="adm-sidebar">
         <div className="adm-sidebar-brand">
           <Link to="/admin" className="adm-brand-link">
-            <span className="adm-brand-logo">airbnb</span>
+            <AirbnbLogo className="admin-logo-image" />
+            <span className="adm-brand-word">airbnb</span>
             <span className="adm-brand-pill">Admin</span>
           </Link>
         </div>

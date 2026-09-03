@@ -17,7 +17,7 @@ function Login({ onLoggedIn }) {
       setSession(data)
       onLoggedIn?.(data)
       setState({ status: 'success', message: `Welcome back, ${data.name || 'there'}` })
-      setTimeout(() => navigate('/'), 700)
+      setTimeout(() => navigate(data?.role === 'host' ? '/admin/login' : '/'), 700)
     } catch (error) {
       setState({ status: 'error', message: error.message })
     }
