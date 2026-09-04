@@ -28,6 +28,8 @@ function AdminLayout() {
   useEffect(() => {
     if (!user || (user.role !== 'admin' && user.role !== 'host')) {
       navigate('/admin/login', { replace: true })
+    } else if (user.role === 'host' && window.location.pathname === '/admin') {
+      navigate('/admin/listings', { replace: true })
     }
   }, [user, navigate])
 
@@ -60,7 +62,7 @@ function AdminLayout() {
         </div>
 
         <nav className="adm-sidebar-nav" aria-label="Admin navigation">
-          {NAV_LINKS.map(({ to, label, icon }) => (
+          {NAV_LINKS.filter(link => user.role === 'admin' || link.to === '/admin/listings').map(({ to, label, icon }) => (
             <NavLink
               key={to}
               to={to}

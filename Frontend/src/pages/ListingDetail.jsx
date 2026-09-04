@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { createBooking, formatCurrency, getListing, getToken } from '../Lib/api'
+import { createBooking, formatCurrency, getListing, getStoredUser, getToken } from '../Lib/api'
 
 const nights = (ci, co) => {
   if (!ci || !co) return 0
@@ -15,6 +15,13 @@ const imgList = (listing) => {
   return ['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85']
 }
 
+const reviewsFor = listing => [
+  { author: 'Thandi M.', date: 'August 2026', body: `Beautiful stay in ${listing?.location?.city || 'South Africa'} with everything we needed.`, rating: 5 },
+  { author: 'Michael R.', date: 'July 2026', body: 'The home was clean, comfortable and exactly as shown in the photos.', rating: 5 },
+  { author: 'Lerato K.', date: 'June 2026', body: 'Great location and a very helpful host. We would happily return.', rating: 4 },
+  { author: 'James P.', date: 'May 2026', body: 'A relaxing base for exploring the area. Highly recommended.', rating: 5 },
+]
+
 function ListingDetail() {
   const { id }       = useParams()
   const navigate     = useNavigate()
@@ -24,6 +31,12 @@ function ListingDetail() {
   const [dates,      setDates]      = useState({ checkIn: '', checkOut: '' })
   const [guests,     setGuests]     = useState(2)
   const [booking,    setBooking]    = useState({ status: 'idle', msg: '' })
+  const [shareMsg,   setShareMsg]   = useState('')
+  const [saved,      setSaved]      = useState(() => {
+    try { return JSON.parse(localStorage.getItem('saved') || '[]') } catch { return [] }
+  })
+  const user = getStoredUser()
+  const canReserve = !user || user.role === 'guest'
 
   useEffect(() => {
     let live = true
@@ -62,6 +75,29 @@ function ListingDetail() {
     })
   }
 
+  const handleShare = async () => {
+    const shareData = { title: listing.title, text: `Check out ${listing.title}`, url: window.location.href }
+    try {
+      if (navigator.share) await navigator.share(shareData)
+      else await navigator.clipboard.writeText(window.location.href)
+      setShareMsg('Link copied.')
+    } catch (error) {
+      if (error.name !== 'AbortError') setShareMsg('Unable to share this listing.')
+    }
+  }
+
+  const toggleSave = () => {
+    setSaved(current => {
+      const next = current.includes(id) ? current.filter(value => value !== id) : [...current, id]
+      localStorage.setItem('saved', JSON.stringify(next))
+      return next
+    })
+  }
+
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    [listing?.location?.address, listing?.location?.city, listing?.location?.country || 'South Africa'].filter(Boolean).join(', ')
+  )}`
+
   if (loadState === 'loading') return (
     <section className="section container"><SkeletonDetail /></section>
   )
@@ -78,6 +114,7 @@ function ListingDetail() {
   const amenList = Array.isArray(listing.amenities) ? listing.amenities
                  : typeof listing.amenities === 'string' ? listing.amenities.split(' ').filter(Boolean) : []
   const hostName = listing.host?.name || 'your host'
+  const reviews = reviewsFor(listing)
 
   return (
     <section className="section container listing-detail">
@@ -85,11 +122,19 @@ function ListingDetail() {
 
       <div className="listing-detail-heading">
         <h1 className="listing-detail-title">{listing.title}</h1>
+        <div className="listing-detail-actions">
+          <a className="listing-action" href={mapUrl} target="_blank" rel="noreferrer">Map</a>
+          <button className="listing-action" type="button" onClick={handleShare}>Share</button>
+          <button className={`listing-action save-action${saved.includes(id) ? ' saved' : ''}`} type="button" onClick={toggleSave}>
+            {saved.includes(id) ? 'Saved' : 'Save'}
+          </button>
+        </div>
         <p className="listing-detail-sub">
           {city}, {country} ·{' '}
           {listing.maxGuests} guests · {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} · {listing.bathrooms} bath{listing.bathrooms !== 1 ? 's' : ''}
         </p>
       </div>
+      {shareMsg && <p className="search-message success listing-share-note">{shareMsg}</p>}
 
       {demoNote && <p className="search-message success listing-demo-note">{demoNote}</p>}
 
@@ -131,10 +176,23 @@ function ListingDetail() {
               All prices in South African Rand (ZAR)
             </p>
           </div>
+
+          <div className="reviews-block">
+            <h3>Guest reviews <span className="review-summary">★ 4.8 · 24 reviews</span></h3>
+            <div className="reviews-grid">
+              {reviews.map(review => (
+                <article key={`${review.author}-${review.date}`} className="review-item">
+                  <p className="review-author">{review.author}<span>{review.date}</span></p>
+                  <p className="review-stars" aria-label={`${review.rating} out of 5 stars`}>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</p>
+                  <p className="review-body">{review.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Booking card */}
-        <form className="booking-card" onSubmit={handleReserve}>
+        {canReserve ? <form className="booking-card" onSubmit={handleReserve}>
           <p className="booking-price">
             <strong>{formatCurrency(price)}</strong> <span>/ night</span>
           </p>
@@ -174,7 +232,12 @@ function ListingDetail() {
             <div><span>Service fee</span><span>{formatCurrency(service)}</span></div>
             <div className="booking-total"><span>Total (ZAR)</span><span>{formatCurrency(total)}</span></div>
           </div>
-        </form>
+        </form> : (
+          <div className="booking-card">
+            <p className="listing-detail-facts">Only guest accounts can reserve a stay.</p>
+            <button className="text-link" type="button" onClick={handleShare}>Share listing</button>
+          </div>
+        )}
       </div>
     </section>
   )

@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, guestOnly } = require('../middleware/authMiddleware');
 const {
   getAccommodations,
   getAccommodationById,
@@ -49,7 +49,7 @@ router.get('/host/listings', protect, async (req, res) => {
 });
 
 // ── Reservations (bookings) ───────────────────────────────────────────
-router.post('/bookings',        protect, createReservation);
+router.post('/bookings',        protect, guestOnly, createReservation);
 router.get('/bookings/mine',    protect, getMyReservations);
 router.delete('/bookings/:id',  protect, deleteReservation);
 

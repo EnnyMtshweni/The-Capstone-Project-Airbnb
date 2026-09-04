@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { createListing, deleteListing, formatCurrency, getMyListings, getToken } from '../Lib/api'
+import { useNavigate } from 'react-router-dom'
+import { createListing, deleteListing, formatCurrency, getMyListings, getStoredUser, getToken } from '../Lib/api'
 
 const SA_CITIES = ['Cape Town','Stellenbosch','Knysna','Sandton','Pretoria','Soweto','Umhlanga','Drakensberg','St Lucia','Hoedspruit','Tzaneen','Graskop','White River','Addo','Port Elizabeth','Clarens','Sun City','Springbok']
 
@@ -10,6 +11,8 @@ const EMPTY = {
 }
 
 function Host() {
+  const navigate = useNavigate()
+  const user = getStoredUser()
   const [listings,   setListings]   = useState([])
   const [loadState,  setLoadState]  = useState('loading')
   const [demoNote,   setDemoNote]   = useState('')
@@ -27,6 +30,9 @@ function Host() {
   }
 
   useEffect(() => { if (loggedIn) load() }, [loggedIn])  // eslint-disable-line
+  useEffect(() => {
+    if (user?.role === 'host') navigate('/admin/listings', { replace: true })
+  }, [user, navigate])
 
   const set = f => e => setForm(p => ({ ...p, [f]: e.target.value }))
 

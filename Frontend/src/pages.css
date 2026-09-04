@@ -1,9 +1,10 @@
 .back-link { margin-bottom: 24px; background: none; border: 0; padding: 0; cursor: pointer; }
 
 .listing-detail { padding-bottom: 90px; }
-.listing-detail-heading { margin-bottom: 20px; }
+.listing-detail-heading { position: relative; margin-bottom: 20px; padding-right: 220px; }
 .listing-detail-title { font-family: var(--display); font-size: 34px; letter-spacing: -1px; color: var(--ink); }
 .listing-detail-sub { font-size: 13px; }
+.listing-detail-actions { position: absolute; top: 0; right: 0; display: flex; gap: 6px; }
 .listing-demo-note { position: static; margin: 0 0 20px; }
 
 .listing-gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 40px; }
@@ -22,6 +23,8 @@
 .review-author { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
 .review-author span { font-weight: 400; color: var(--muted); margin-left: 8px; }
 .review-body { font-size: 13px; line-height: 1.5; }
+.review-summary { color: var(--coral); font-family: var(--sans); font-size: 12px; font-weight: 600; margin-left: 8px; }
+.review-stars { color: var(--coral); font-size: 12px; letter-spacing: 1px; margin-bottom: 6px; }
 .host-block p { font-size: 13px; }
 
 .booking-card { position: sticky; top: 24px; border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 12px 30px rgba(36, 34, 27, .08); }
@@ -61,6 +64,11 @@
 .forgot-password a { color: var(--ink); }
 
 @media (max-width: 700px) {
+    .homes-layout { grid-template-columns: 1fr; }
+    .homes-map-panel { position: relative; top: auto; min-height: 280px; }
+    .homes-map-panel iframe { min-height: 280px; }
+  .listing-detail-heading { padding-right: 0; }
+  .listing-detail-actions { position: static; justify-content: flex-start; margin-top: 12px; }
   .listing-detail-grid { grid-template-columns: 1fr; gap: 40px; }
   .listing-gallery { grid-template-columns: 1fr 1fr; }
   .listing-gallery-image:first-child { grid-column: span 2; grid-row: auto; aspect-ratio: 1.6; }

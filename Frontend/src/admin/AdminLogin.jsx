@@ -6,12 +6,14 @@
  */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../Lib/api'
+import { clearSession, login, register, setSession } from '../Lib/api'
 import AirbnbLogo from '../components/AirbnbLogo'
 
 function AdminLogin({ onLoggedIn }) {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [accountType, setAccountType] = useState('admin')
+  const [mode, setMode] = useState('login')
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
   const [msg, setMsg] = useState('')
@@ -58,12 +60,22 @@ function AdminLogin({ onLoggedIn }) {
     setMsg('')
 
     try {
-      const data = await login({ email: form.email, password: form.password, role: 'admin' })
+      const data = mode === 'signup'
+        ? await register({ name: form.name, email: form.email, password: form.password, role: 'host' })
+        : await login({ email: form.email, password: form.password, role: accountType })
 
-      if (data?.role !== 'admin') {
-        throw new Error('This account is not an admin account.')
+      if (mode === 'signup') {
+        clearSession()
+        setMode('login')
+        setMsg('Host account created. Log in to open your listing dashboard.')
+        return
       }
 
+      if (data?.role !== accountType) {
+        throw new Error(`This account is not a ${accountType} account.`)
+      }
+
+      setSession(data)
       onLoggedIn?.(data)
       navigate('/admin', { replace: true })
     } catch (error) {
@@ -81,12 +93,30 @@ function AdminLogin({ onLoggedIn }) {
           <span className="admin-login-badge">Admin</span>
         </div>
 
-        <h1 className="admin-login-title">Sign in to Dashboard</h1>
+          <h1 className="admin-login-title">{mode === 'signup' ? 'Create host account' : 'Sign in to Dashboard'}</h1>
         <p className="admin-login-sub">
-          Use your administrator credentials to access the management console.
+          {mode === 'signup' ? 'Create a host account before managing your listing.' : 'Choose a role and sign in to continue.'}
         </p>
 
+        <div className="admin-role-switch" role="group" aria-label="Login type">
+          <button type="button" className={accountType === 'admin' && mode === 'login' ? 'active' : ''} onClick={() => { setAccountType('admin'); setMode('login'); setMsg('') }}>Admin login</button>
+          <button type="button" className={accountType === 'host' ? 'active' : ''} onClick={() => { setAccountType('host'); setMode('login'); setMsg('') }}>Host login</button>
+          <button type="button" className={accountType === 'guest' ? 'active' : ''} onClick={() => navigate('/login')}>Guest login</button>
+        </div>
+
+        {accountType === 'host' && (
+          <button type="button" className="admin-host-signup-toggle" onClick={() => { setMode(value => value === 'signup' ? 'login' : 'signup'); setMsg('') }}>
+            {mode === 'signup' ? 'Already have a host account? Log in' : 'New host? Sign up first'}
+          </button>
+        )}
+
         <form onSubmit={handleSubmit} noValidate>
+          {mode === 'signup' && (
+            <div className="adm-field">
+              <label htmlFor="adm-name">Full name</label>
+              <input id="adm-name" type="text" value={form.name} onChange={handleFieldChange('name')} required />
+            </div>
+          )}
           <div className={`adm-field${errors.email ? ' has-error' : ''}`}>
             <label htmlFor="adm-email">Email address</label>
             <input
@@ -94,7 +124,7 @@ function AdminLogin({ onLoggedIn }) {
               type="email"
               value={form.email}
               onChange={handleFieldChange('email')}
-              placeholder="admin@airbnb-sa.com"
+              placeholder={accountType === 'host' ? 'host@example.com' : 'admin@airbnb-sa.com'}
               autoComplete="email"
               autoFocus
             />
@@ -121,7 +151,7 @@ function AdminLogin({ onLoggedIn }) {
           )}
 
           <button className="adm-login-btn" type="submit" disabled={status === 'loading'}>
-            {status === 'loading' ? 'Signing in…' : 'Sign in'}
+            {status === 'loading' ? 'Please wait…' : mode === 'signup' ? 'Create host account' : `Sign in as ${accountType}`}
           </button>
         </form>
 

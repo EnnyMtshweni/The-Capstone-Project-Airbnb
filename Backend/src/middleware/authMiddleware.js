@@ -54,4 +54,12 @@ const hostOrAdmin = (req, res, next) => {
   throw new Error('Not authorized - host or admin only');
 };
 
-module.exports = { protect, admin, hostOrAdmin };
+const guestOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'guest') {
+    return next();
+  }
+  res.status(403);
+  throw new Error('Only guest accounts can make reservations');
+};
+
+module.exports = { protect, admin, hostOrAdmin, guestOnly };

@@ -113,6 +113,23 @@ function Home({ search, onSearchChange, triggerSearch }) {
     })
   }
 
+  const shareListing = async (e, listing) => {
+    e.preventDefault()
+    const url = `${window.location.origin}/listing/${listing._id || listing.id}`
+    try {
+      if (navigator.share) await navigator.share({ title: listing.title, url })
+      else await navigator.clipboard.writeText(url)
+    } catch (error) {
+      if (error.name !== 'AbortError') window.prompt('Copy listing link:', url)
+    }
+  }
+
+  const mapUrl = listing => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    [listing.location?.address, listing.location?.city, listing.location?.country || 'South Africa'].filter(Boolean).join(', ')
+  )}`
+
+const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(province || search?.destination || 'South Africa')}&output=embed`
+
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────────── */}
@@ -233,8 +250,22 @@ function Home({ search, onSearchChange, triggerSearch }) {
         {status === 'loading' && <SkeletonGrid />}
 
         {status === 'success' && listings.length > 0 && (
-          <div className="listing-grid">
-            {listings.map((l, i) => {
+          <div className="homes-layout">
+            <aside className="homes-map-panel" aria-label="Map of available homes">
+              <iframe
+                title="Map of available South African homes"
+                src={mapEmbedUrl}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+              <div className="homes-map-overlay">
+                <strong>{province || search?.destination || 'South Africa'}</strong>
+                <span>{listings.length} homes available</span>
+                <a href={mapUrl(listings[0])} target="_blank" rel="noreferrer">Open in Google Maps</a>
+              </div>
+            </aside>
+            <div className="listing-grid">
+              {listings.map((l, i) => {
               const id = l._id || l.id || String(i)
               const city = l.location?.city || l.location || 'South Africa'
               return (
@@ -250,15 +281,24 @@ function Home({ search, onSearchChange, triggerSearch }) {
                       <h3>{l.title}</h3>
                       <p>{city}</p>
                       <p className="listing-meta-beds">{l.bedrooms} bed{l.bedrooms !== 1 ? 's' : ''} · {l.bathrooms} bath{l.bathrooms !== 1 ? 's' : ''} · up to {l.maxGuests} guests</p>
+                      <p className="listing-rating" aria-label="Rated 4.8 out of 5">★ 4.8 <span>(24 reviews)</span></p>
                     </div>
                     <div className="listing-meta-right">
                       <strong>{formatCurrency(l.pricePerNight)}</strong>
                       <small>/ night</small>
+                      <div className="listing-actions" aria-label={`${l.title} actions`}>
+                        <a className="listing-action" href={mapUrl(l)} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>Map</a>
+                        <button className="listing-action" type="button" onClick={e => shareListing(e, l)}>Share</button>
+                        <button className={`listing-action save-action${saved.includes(id) ? ' saved' : ''}`} type="button" onClick={e => toggleSave(e, id)}>
+                          {saved.includes(id) ? 'Saved' : 'Save'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </Link>
               )
-            })}
+              })}
+            </div>
           </div>
         )}
 

@@ -3,16 +3,23 @@
  * Route: /admin/listings/new
  * Uses the shared AdminListingForm. On success redirects to /admin/listings.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createListing } from '../Lib/api'
+import { createListing, getStoredUser } from '../Lib/api'
 import AdminListingForm from './AdminListingForm'
 
 function AdminCreateListing() {
   const navigate          = useNavigate()
+  const user              = getStoredUser()
   const [isLoading, setIsLoading] = useState(false)
   const [error,     setError]     = useState('')
   const [success,   setSuccess]   = useState('')
+
+  useEffect(() => {
+    if (user?.role !== 'admin') navigate('/admin/listings', { replace: true })
+  }, [user, navigate])
+
+  if (user?.role !== 'admin') return null
 
   const handleSubmit = async data => {
     setIsLoading(true)

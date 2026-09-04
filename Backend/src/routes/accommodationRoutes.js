@@ -7,15 +7,15 @@ const {
   updateAccommodation,
   deleteAccommodation,
 } = require('../controllers/accommodationController');
-const { protect, hostOrAdmin } = require('../middleware/authMiddleware');
+const { protect, admin, hostOrAdmin } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(getAccommodations)                       // Public: search/browse
-  .post(protect, hostOrAdmin, createAccommodation); // Private: hosts/admins only
+  .post(protect, admin, createAccommodation); // Private: admins only
 
 router.route('/:id')
   .get(getAccommodationById)                        // Public: view one listing
   .put(protect, hostOrAdmin, updateAccommodation)    // Private: owner or admin
-  .delete(protect, hostOrAdmin, deleteAccommodation);// Private: owner or admin
+  .delete(protect, admin, deleteAccommodation);       // Private: admins only
 
 module.exports = router;
