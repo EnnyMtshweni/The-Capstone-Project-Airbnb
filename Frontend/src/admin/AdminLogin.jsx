@@ -72,6 +72,7 @@ function AdminLogin({ onLoggedIn }) {
       }
 
       if (data?.role !== accountType) {
+        clearSession()
         throw new Error(`This account is not a ${accountType} account.`)
       }
 

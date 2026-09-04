@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login, register } from '../Lib/api'
+import { clearSession, login, register } from '../Lib/api'
 import AirbnbLogo from './AirbnbLogo'
 
 export default function LoginModal({ onClose, onSuccess }) {
@@ -36,6 +36,7 @@ export default function LoginModal({ onClose, onSuccess }) {
             })
 
       if (payload?.role === 'admin') {
+        clearSession()
         throw new Error('Admin login is not allowed from this popup.')
       }
 

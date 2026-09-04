@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login, setSession } from '../Lib/api'
+import { clearSession, login, setSession } from '../Lib/api'
 
 function Login({ onLoggedIn }) {
   const navigate = useNavigate()
@@ -13,7 +13,11 @@ function Login({ onLoggedIn }) {
     event.preventDefault()
     setState({ status: 'loading', message: '' })
     try {
-      const data = await login(form)
+      const data = await login({ ...form, role: 'guest' })
+      if (data?.role !== 'guest') {
+        clearSession()
+        throw new Error('This account is not a guest account.')
+      }
       setSession(data)
       onLoggedIn?.(data)
       setState({ status: 'success', message: `Welcome back, ${data.name || 'there'}` })
