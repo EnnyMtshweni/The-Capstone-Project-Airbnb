@@ -4,7 +4,7 @@
 // Falls back to rich SA demo data when the backend is unreachable.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const BASE = '' // Vite proxies /api → http://localhost:5000
+const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 // ── Session helpers ──────────────────────────────────────────────────────────
 export const getToken       = () => localStorage.getItem('token')
@@ -26,6 +26,7 @@ async function request(path, { method = 'GET', body, auth = false } = {}) {
   const res  = await fetch(BASE + path, {
     method,
     headers: { 'Content-Type': 'application/json', ...(auth ? authHeaders() : {}) },
+    credentials: 'include',
     body: body ? JSON.stringify(body) : undefined,
   })
   const text = await res.text()
