@@ -36,10 +36,10 @@ function AdminDashboard() {
 
   const cards = stats
     ? [
-        { icon: '🏠', label: 'Active Listings',   value: stats.totalListings,     color: 'blue',   to: '/admin/listings'     },
-        { icon: '📅', label: 'Total Reservations', value: stats.totalReservations, color: 'green',  to: '/admin/reservations' },
-        { icon: '👥', label: 'Registered Users',   value: stats.totalUsers,        color: 'purple', to: '/admin/users'        },
-        { icon: '💰', label: 'Total Revenue (ZAR)',value: formatCurrency(stats.revenue), color: 'coral', to: '/admin/reservations' },
+        { icon: '□', label: 'Active Listings',   value: stats.totalListings,     color: 'blue',   to: '/admin/listings'     },
+        { icon: '◷', label: 'Total Reservations', value: stats.totalReservations, color: 'green',  to: '/admin/reservations' },
+        { icon: '○', label: 'Registered Users',   value: stats.totalUsers,        color: 'purple', to: '/admin/users'        },
+        { icon: '$', label: 'Total Revenue (ZAR)',value: formatCurrency(stats.revenue), color: 'coral', to: '/admin/reservations' },
       ]
     : []
 

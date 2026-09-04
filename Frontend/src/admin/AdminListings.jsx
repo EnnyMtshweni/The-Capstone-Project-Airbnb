@@ -63,7 +63,7 @@ function AdminListings() {
           <h1>Property Listings</h1>
           <p className="adm-page-sub">{listings.length} total listings in South Africa</p>
         </div>
-        {isAdmin && <Link to="/admin/listings/new" className="adm-btn adm-btn--primary">+ Add Listing</Link>}
+        <Link to="/admin/listings/new" className="adm-btn adm-btn--primary">+ Add Listing</Link>
       </div>
 
       {/* Search */}
@@ -85,7 +85,7 @@ function AdminListings() {
       {status === 'ready' && filtered.length === 0 && (
         <div className="adm-empty">
           <p>{search ? 'No listings match your search.' : 'No listings yet.'}</p>
-          {!search && isAdmin && <Link to="/admin/listings/new" className="adm-btn adm-btn--primary">Create first listing</Link>}
+          {!search && <Link to="/admin/listings/new" className="adm-btn adm-btn--primary">Create first listing</Link>}
         </div>
       )}
 
@@ -136,7 +136,7 @@ function AdminListings() {
                           Edit
                         </Link>
                         {isAdmin && <button className="adm-action-btn" onClick={() => handleShare(l)}>Share</button>}
-                        {isAdmin && confirm === id ? (
+                        {confirm === id ? (
                           <>
                             <button
                               className="adm-action-btn adm-action-btn--danger"
@@ -152,14 +152,14 @@ function AdminListings() {
                               Cancel
                             </button>
                           </>
-                        ) : isAdmin ? (
+                        ) : (
                           <button
                             className="adm-action-btn adm-action-btn--delete"
                             onClick={() => setConfirm(id)}
                           >
                             Delete
                           </button>
-                        ) : null}
+                        )}
                       </div>
                     </td>
                   </tr>

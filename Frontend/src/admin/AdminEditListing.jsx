@@ -37,7 +37,7 @@ function AdminEditListing() {
       setSuccess(
         demo
           ? 'Changes saved locally (demo mode).'
-          : `✅ "${updated.title}" updated successfully!`
+          : `"${updated.title}" updated successfully.`
       )
       // Refresh local state so form reflects saved values
       setListing(updated)

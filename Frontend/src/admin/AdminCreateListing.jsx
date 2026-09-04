@@ -16,10 +16,10 @@ function AdminCreateListing() {
   const [success,   setSuccess]   = useState('')
 
   useEffect(() => {
-    if (user?.role !== 'admin') navigate('/admin/listings', { replace: true })
+    if (user?.role !== 'admin' && user?.role !== 'host') navigate('/admin/listings', { replace: true })
   }, [user, navigate])
 
-  if (user?.role !== 'admin') return null
+  if (user?.role !== 'admin' && user?.role !== 'host') return null
 
   const handleSubmit = async data => {
     setIsLoading(true)
@@ -29,7 +29,7 @@ function AdminCreateListing() {
       setSuccess(
         demo
           ? `Listing saved locally (demo mode). ID: ${created._id || created.id}`
-          : `✅ Listing "${created.title}" created successfully!`
+          : `Listing "${created.title}" created successfully.`
       )
       setTimeout(() => navigate('/admin/listings'), 1200)
     } catch (err) {

@@ -191,17 +191,24 @@ Authorization: Bearer <token>
 
 ---
 
-## Roles
+## Roles and access
 
 | Role | Can do |
 |---|---|
 | `guest` | Register, login, browse, book stays, view own bookings |
-| `host` | Everything a guest can, plus create/edit/delete their own listings |
-| `admin` | Everything, plus view/manage all listings, all users, all reservations (used by the Admin frontend) |
+| `host` | Register, login through the dashboard, create listings, and edit or delete only their own listings |
+| `admin` | Login directly through the dashboard and create, edit, delete, and share listings; view/manage all users and reservations |
 
 > Note: `admin` accounts should be created directly in the database (or via a
 > one-off seed script) — public registration only allows `guest` or `host`
 > for security.
+
+### Frontend login flow
+
+- Guests sign up or log in from the public guest login dialog. Guests can reserve and share listings and view their own reservations in My Trips.
+- Hosts select `Become a host`, create a host account at `/admin/login`, then log in there to open their host dashboard.
+- Administrators use the Admin login option at `/admin/login`; no admin signup is provided.
+- Hosts see the Listings dashboard only. The API verifies ownership for listing updates and deletes, so a host cannot modify another host's listing.
 
 ---
 

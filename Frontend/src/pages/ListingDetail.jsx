@@ -71,7 +71,7 @@ function ListingDetail() {
       status: 'success',
       msg: demo
         ? `Booking saved locally (demo). ID: ${data._id || data.id}`
-        : `🎉 Booked! Confirmation #${data._id || data.id}. Check My Trips for details.`,
+        : `Booked. Confirmation #${data._id || data.id}. Check My Trips for details.`,
     })
   }
 

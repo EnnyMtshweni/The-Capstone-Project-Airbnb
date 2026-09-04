@@ -13,9 +13,9 @@ import AirbnbLogo from '../components/AirbnbLogo'
 
 const NAV_LINKS = [
   { to: '/admin',              label: 'Dashboard',    icon: '▦'  },
-  { to: '/admin/listings',     label: 'Listings',     icon: '🏠' },
-  { to: '/admin/reservations', label: 'Reservations', icon: '📅' },
-  { to: '/admin/users',        label: 'Users',        icon: '👥' },
+  { to: '/admin/listings',     label: 'Listings',     icon: '□'  },
+  { to: '/admin/reservations', label: 'Reservations', icon: '◷'  },
+  { to: '/admin/users',        label: 'Users',        icon: '○'  },
 ]
 
 function AdminLayout() {
@@ -57,7 +57,7 @@ function AdminLayout() {
           <Link to="/admin" className="adm-brand-link">
             <AirbnbLogo className="admin-logo-image" />
             <span className="adm-brand-word">airbnb</span>
-            <span className="adm-brand-pill">Admin</span>
+            <span className="adm-brand-pill">{user.role === 'host' ? 'Host' : 'Admin'}</span>
           </Link>
         </div>
 
@@ -124,7 +124,7 @@ function AdminLayout() {
                   role="menuitem"
                   onClick={() => setDrop(false)}
                 >
-                  📅 View Reservations
+                  ◷ View Reservations
                 </Link>
                 <Link
                   to="/admin/listings"
@@ -132,7 +132,7 @@ function AdminLayout() {
                   role="menuitem"
                   onClick={() => setDrop(false)}
                 >
-                  🏠 Manage Listings
+                  □ Manage Listings
                 </Link>
                 <Link
                   to="/"
@@ -140,7 +140,7 @@ function AdminLayout() {
                   role="menuitem"
                   onClick={() => setDrop(false)}
                 >
-                  🌐 View public site
+                  ↗ View public site
                 </Link>
                 <div className="adm-dropdown-divider" />
                 <button
@@ -148,7 +148,7 @@ function AdminLayout() {
                   role="menuitem"
                   onClick={handleLogout}
                 >
-                  🚪 Log out
+                  ↪ Log out
                 </button>
               </div>
             )}

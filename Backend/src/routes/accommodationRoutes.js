@@ -11,11 +11,11 @@ const { protect, admin, hostOrAdmin } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(getAccommodations)                       // Public: search/browse
-  .post(protect, admin, createAccommodation); // Private: admins only
+  .post(protect, hostOrAdmin, createAccommodation); // Private: hosts/admins
 
 router.route('/:id')
   .get(getAccommodationById)                        // Public: view one listing
   .put(protect, hostOrAdmin, updateAccommodation)    // Private: owner or admin
-  .delete(protect, admin, deleteAccommodation);       // Private: admins only
+  .delete(protect, hostOrAdmin, deleteAccommodation); // Private: owner/admin
 
 module.exports = router;
