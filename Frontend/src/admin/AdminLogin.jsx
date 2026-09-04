@@ -81,6 +81,8 @@ function AdminLogin({ onLoggedIn }) {
     } catch (error) {
       setStatus('error')
       setMsg(error.message || 'Admin login failed.')
+    } finally {
+      setStatus(current => current === 'loading' ? 'idle' : current)
     }
   }
 

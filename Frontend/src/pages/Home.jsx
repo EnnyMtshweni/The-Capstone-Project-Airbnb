@@ -128,8 +128,6 @@ function Home({ search, onSearchChange, triggerSearch }) {
     [listing.location?.address, listing.location?.city, listing.location?.country || 'South Africa'].filter(Boolean).join(', ')
   )}`
 
-const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(province || search?.destination || 'South Africa')}&output=embed`
-
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────────── */}
@@ -250,22 +248,8 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(province
         {status === 'loading' && <SkeletonGrid />}
 
         {status === 'success' && listings.length > 0 && (
-          <div className="homes-layout">
-            <aside className="homes-map-panel" aria-label="Map of available homes">
-              <iframe
-                title="Map of available South African homes"
-                src={mapEmbedUrl}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-              <div className="homes-map-overlay">
-                <strong>{province || search?.destination || 'South Africa'}</strong>
-                <span>{listings.length} homes available</span>
-                <a href={mapUrl(listings[0])} target="_blank" rel="noreferrer">Open in Google Maps</a>
-              </div>
-            </aside>
-            <div className="listing-grid">
-              {listings.map((l, i) => {
+          <div className="listing-grid">
+            {listings.map((l, i) => {
               const id = l._id || l.id || String(i)
               const city = l.location?.city || l.location || 'South Africa'
               return (
@@ -298,7 +282,6 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(province
                 </Link>
               )
               })}
-            </div>
           </div>
         )}
 

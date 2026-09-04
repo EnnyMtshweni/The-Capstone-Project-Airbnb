@@ -28,7 +28,7 @@
   display: flex;
   min-height: 100vh;
   background: var(--adm-bg);
-  font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+  font-family: var(--sans);
   color: var(--adm-ink);
 }
 
@@ -62,9 +62,9 @@
 .admin-logo-image { width: 42px; height: 42px; flex-shrink: 0; }
 .adm-brand-word {
   color: var(--adm-coral);
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -1px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -1.6px;
 }
 .adm-brand-pill {
   background: var(--adm-coral);
@@ -75,6 +75,39 @@
   border-radius: 999px;
   letter-spacing: 1px;
   text-transform: uppercase;
+}
+
+.admin-role-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 20px 0 12px;
+}
+.admin-role-switch button,
+.admin-host-signup-toggle {
+  border: 1px solid var(--adm-border);
+  border-radius: 8px;
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 8px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.admin-role-switch button:hover,
+.admin-host-signup-toggle:hover { border-color: var(--adm-coral); color: var(--adm-coral); }
+.admin-role-switch button.active {
+  background: var(--adm-coral);
+  border-color: var(--adm-coral);
+  color: white;
+}
+.admin-host-signup-toggle {
+  width: 100%;
+  margin: 0 0 16px;
+  color: var(--adm-coral);
+  background: #fff7f7;
 }
 
 .adm-sidebar-nav {

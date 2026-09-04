@@ -172,6 +172,13 @@ function ListingDetail() {
           <div className="location-block">
             <h3>Location</h3>
             <p>{listing.location?.address ? `${listing.location.address}, ` : ''}{city}, {country}</p>
+            <iframe
+              className="listing-map"
+              title={`Map showing ${listing.title}`}
+              src={`https://www.google.com/maps?q=${encodeURIComponent([listing.location?.address, city, country].filter(Boolean).join(', '))}&output=embed`}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
             <p className="listing-detail-facts" style={{ marginTop: 6 }}>
               All prices in South African Rand (ZAR)
             </p>

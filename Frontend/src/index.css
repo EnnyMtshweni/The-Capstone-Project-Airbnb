@@ -4,8 +4,8 @@
   --coral: #e5514d;
   --line: #dfe2db;
   --paper: #f8f8f4;
-  --sans: 'Trebuchet MS', 'Segoe UI', sans-serif;
-  --display: Georgia, 'Times New Roman', serif;
+  --sans: 'Circular', 'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --display: 'Circular', 'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-family: var(--sans);
   color: var(--muted);
   background: var(--paper);

@@ -81,7 +81,7 @@ function Nav({ user, onOpenLogin, onLogout, darkMode, onToggleDarkMode, onSearch
           {/* Host onboarding is handled through the dashboard sign-in page. */}
           {(!user || user.role !== 'admin') && (
             <button className="host-link" type="button" onClick={() => navigate('/admin/login')}>
-              Sign up as a host
+              Become a host
             </button>
           )}
           <button type="button" className="icon-button" aria-label="Toggle dark mode" onClick={onToggleDarkMode}>
